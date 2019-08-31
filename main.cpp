@@ -139,18 +139,30 @@ static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
         case INT_I:
             if (c == 'n') {
                 state = INT_N;
+                res.back().val += c;
             } else {
                 state = ID;
+                if (isAlpha(c) || isDigital(c) || c == '_')
+                    res.back().val += c;
+                else {
+                    state = INITIAL;
+                    initToken(c, state, res);
+                }
             }
-            res.back().val += c;
             break;
         case INT_N:
             if (c == 't') {
                 state = INT;
+                res.back().val += c;
             } else {
                 state = ID;
+                if (isAlpha(c) || isDigital(c) || c == '_')
+                    res.back().val += c;
+                else {
+                    state = INITIAL;
+                    initToken(c, state, res);
+                }
             }
-            res.back().val += c;
             break;
         case INT:
             if (isBlank(c)) {
@@ -204,13 +216,13 @@ int main(int, char**) {
     std::string str1 = "int age = 40";
     std::string str2 = "intA_0=50";
     std::string str3 = "_int8a>=46";
-    //std::string str4 = "in arg b = 23 =b9";
+    std::string str4 = "in arg b = 23 =b9";
     std::string str5 = "2+3   * 5";
     handle(str0, INITIAL, res);
     handle(str1, INITIAL, res);
     handle(str2, INITIAL, res);
     handle(str3, INITIAL, res);
-    //handle(str4, INITIAL, res);
+    handle(str4, INITIAL, res);
     handle(str5, INITIAL, res);
 
     for (std::vector<Token>::iterator iter = res.begin(); iter != res.end(); iter++)
