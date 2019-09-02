@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "grammar_analyze.h"
 
 
 enum Dfstate {
@@ -18,33 +19,12 @@ enum Dfstate {
     GE,
 };
 
-enum TokenType {
-    ID_TYPE,
-    INT_LITERAL_TYPE,
-    INT_TYPE,
-    EQ_TYPE,
-    GT_TYPE,
-    GE_TYPE,
-    PLUS_TYPE,
-    MINUS_TYPE,
-    STAR_TYPE,
-    SLASH_TYPE,
-    None_Type,
-};
-
-struct Token {
-    TokenType type;
-    std::string val;
-};
-
-static void handle(const std::string& src, const Dfstate& state, std::vector<Token>& res);
 static void initToken(const char c, Dfstate& state, std::vector<Token>& res);
 static void handleState(const char c, Dfstate& state, std::vector<Token>& res);
-static std::string type2str(const TokenType& type);
 
 static std::unordered_map<char, TokenType> tokenMap = {{'+', PLUS_TYPE}, {'-', MINUS_TYPE}, {'*', STAR_TYPE}, {'/', SLASH_TYPE}};
 
-static std::string type2str(const TokenType& type) {
+std::string type2str(const TokenType& type) {
     switch (type) {
         case ID_TYPE:
             return "Identifier";
@@ -90,8 +70,8 @@ static bool isBlank(const char& c) {
     return false;
 }
 
-static void handle(const std::string& src, const Dfstate& initialState, std::vector<Token>& res) {
-    Dfstate newState = initialState;
+void handle(const std::string& src, std::vector<Token>& res) {
+    Dfstate newState = INITIAL;
     for (int i = 0; i < src.length(); i++) {
         handleState(src[i], newState, res);
     }
@@ -205,27 +185,4 @@ static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
             }
             break;
     }
-}
-
-/* Interpret the following 3 expression
- * int age = 40, age >= 45, 2+3*5
- */
-int main(int, char**) {
-    std::vector<Token> res = {};
-    std::string str0 = "age >= 45";
-    std::string str1 = "int age = 40";
-    std::string str2 = "intA_0=50";
-    std::string str3 = "_int8a>=46";
-    std::string str4 = "in arg b = 23 =b9";
-    std::string str5 = "2+3   * 5";
-    handle(str0, INITIAL, res);
-    handle(str1, INITIAL, res);
-    handle(str2, INITIAL, res);
-    handle(str3, INITIAL, res);
-    handle(str4, INITIAL, res);
-    handle(str5, INITIAL, res);
-
-    for (std::vector<Token>::iterator iter = res.begin(); iter != res.end(); iter++)
-        std::cout << type2str(iter->type) << ": " << iter->val << std::endl;
-    return 0;
 }
