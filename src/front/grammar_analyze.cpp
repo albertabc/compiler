@@ -3,17 +3,17 @@
 #include <vector>
 #include <unordered_map>
 
-#include "grammar_analyze.h"
+#include "front/grammar_analyze.h"
 
 
-enum Dfstate {
+enum class Dfstate {
     INITIAL,
     INT_I,
     INT_N,
     INT,
     ID,
     INT_LITERAL,
-    OPERAOTR,
+    OPERATOR,
     EQ,
     GT,
     GE,
@@ -30,7 +30,7 @@ std::string type2str(const TokenType& type) {
             return "Identifier";
         case INT_LITERAL_TYPE:
             return "IntLiteral";
-        case EQ_TYPE:
+        case ASSIGN_TYPE:
             return "ASSIGN";
         case GT_TYPE:
             return "GT";
@@ -71,34 +71,34 @@ static bool isBlank(const char& c) {
 }
 
 void grammar_analyze(const std::string& src, std::vector<Token>& res) {
-    Dfstate newState = INITIAL;
+    Dfstate newState = Dfstate::INITIAL;
     for (int i = 0; i < src.length(); i++) {
         handleState(src[i], newState, res);
     }
 }
 
 static void initToken(const char c, Dfstate& state, std::vector<Token>& res) {
-    if (state != INITIAL)
+    if (state != Dfstate::INITIAL)
         return;
 
     Token token;
     if (c == 'i') {
-        state = INT_I;
+        state = Dfstate::INT_I;
         token.type = ID_TYPE;
     } else if (isAlpha(c) || c == '_') {
-        state = ID;
+        state = Dfstate::ID;
         token.type = ID_TYPE;
     } else if (isDigital(c)) {
-        state = INT_LITERAL;
+        state = Dfstate::INT_LITERAL;
         token.type = INT_LITERAL_TYPE;
     } else if (c == '>') {
-        state = GT;
+        state = Dfstate::GT;
         token.type = GT_TYPE;
     } else if (c == '=') {
-        state = EQ;
-        token.type = EQ_TYPE;
+        state = Dfstate::EQ;
+        token.type = ASSIGN_TYPE;
     } else if (c == '+' || c == '-' || c == '*' || c == '/') {
-        state = OPERAOTR;
+        state = Dfstate::OPERATOR;
         token.type = tokenMap[c];
     } else {
         return;
@@ -110,77 +110,77 @@ static void initToken(const char c, Dfstate& state, std::vector<Token>& res) {
 
 static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
     switch (state) {
-        case INITIAL:
-        case EQ:
-        case OPERAOTR:
-            state = INITIAL;
+        case Dfstate::INITIAL:
+        case Dfstate::EQ:
+        case Dfstate::OPERATOR:
+            state = Dfstate::INITIAL;
             initToken(c, state, res);
             break;
-        case INT_I:
+        case Dfstate::INT_I:
             if (c == 'n') {
-                state = INT_N;
+                state = Dfstate::INT_N;
                 res.back().val += c;
             } else {
-                state = ID;
+                state = Dfstate::ID;
                 if (isAlpha(c) || isDigital(c) || c == '_')
                     res.back().val += c;
                 else {
-                    state = INITIAL;
+                    state = Dfstate::INITIAL;
                     initToken(c, state, res);
                 }
             }
             break;
-        case INT_N:
+        case Dfstate::INT_N:
             if (c == 't') {
-                state = INT;
+                state = Dfstate::INT;
                 res.back().val += c;
             } else {
-                state = ID;
+                state = Dfstate::ID;
                 if (isAlpha(c) || isDigital(c) || c == '_')
                     res.back().val += c;
                 else {
-                    state = INITIAL;
+                    state = Dfstate::INITIAL;
                     initToken(c, state, res);
                 }
             }
             break;
-        case INT:
+        case Dfstate::INT:
             if (isBlank(c)) {
                 res.back().type = INT_TYPE;
-                state = INITIAL;
+                state = Dfstate::INITIAL;
                 initToken(c, state, res);
             } else {
-                state = ID;
+                state = Dfstate::ID;
                 res.back().val += c;
             }
             break;
-        case ID:
+        case Dfstate::ID:
             if (isAlpha(c) || isDigital(c) || c == '_') {
                 res.back().val += c;
             } else {
-                state = INITIAL;
+                state = Dfstate::INITIAL;
                 initToken(c, state, res);
             }
             break;
-        case GT:
+        case Dfstate::GT:
             if (c == '=') {
-                state = GE;
+                state = Dfstate::GE;
                 res.back().type = GE_TYPE;
                 res.back().val += c;
             } else {
-                state = INITIAL;
+                state = Dfstate::INITIAL;
                 initToken(c, state, res);
             }
             break;
-        case GE:
-            state = INITIAL;
+        case Dfstate::GE:
+            state = Dfstate::INITIAL;
             initToken(c, state, res);
             break;
-        case INT_LITERAL:
+        case Dfstate::INT_LITERAL:
             if (isDigital(c)) {
                 res.back().val += c;
             } else {
-                state = INITIAL;
+                state = Dfstate::INITIAL;
                 initToken(c, state, res); 
             }
             break;

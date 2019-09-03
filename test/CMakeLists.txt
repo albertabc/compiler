@@ -1,8 +1,12 @@
-file(GLOB HDRS "../include/*.h")
+file(GLOB HDRS ${PROJECT_SOURCE_DIR}"/include/*.h")
 
-aux_source_directory(./ SRCS)
 
-include_directories(../include)
-set(TARGET_NAME "grammar-test")
-add_executable(${TARGET_NAME} ${HDRS} ${SRCS})
-target_link_libraries(${TARGET_NAME}  grammar-analyzer)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
+function(add_sample SAMPLE_NAME)
+    add_executable(${SAMPLE_NAME} ${HDRS} ${SAMPLE_NAME}.cpp)
+    target_link_libraries(${SAMPLE_NAME} front-handler)
+endfunction()
+
+add_sample(grammar_analyze_test)
+add_sample(syntax-test)
