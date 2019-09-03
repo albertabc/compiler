@@ -70,7 +70,7 @@ static bool isBlank(const char& c) {
     return false;
 }
 
-void handle(const std::string& src, std::vector<Token>& res) {
+void grammar_analyze(const std::string& src, std::vector<Token>& res) {
     Dfstate newState = INITIAL;
     for (int i = 0; i < src.length(); i++) {
         handleState(src[i], newState, res);

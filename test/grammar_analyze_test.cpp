@@ -12,12 +12,12 @@ int main(int, char**) {
     std::string str3 = "_int8a>=46";
     std::string str4 = "in arg b = 23 =b9";
     std::string str5 = "2+3   * 5";
-    handle(str0, res);
-    handle(str1, res);
-    handle(str2, res);
-    handle(str3, res);
-    handle(str4, res);
-    handle(str5, res);
+    grammar_analyze(str0, res);
+    grammar_analyze(str1, res);
+    grammar_analyze(str2, res);
+    grammar_analyze(str3, res);
+    grammar_analyze(str4, res);
+    grammar_analyze(str5, res);
 
     for (std::vector<Token>::iterator iter = res.begin(); iter != res.end(); iter++)
         std::cout << type2str(iter->type) << ": " << iter->val << std::endl;

@@ -25,6 +25,6 @@ struct Token {
 };
 
 
-void handle(const std::string& src, std::vector<Token>& res);
+void grammar_analyze(const std::string& src, std::vector<Token>& res);
 std::string type2str(const TokenType& type);
 #endif
