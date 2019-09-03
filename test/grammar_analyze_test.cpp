@@ -1,5 +1,5 @@
 #include <iostream>
-#include "grammar_analyze.h"
+#include "front/grammar_analyze.h"
 
 /* Interpret the following 3 expression
  * int age = 40, age >= 45, 2+3*5
@@ -10,7 +10,7 @@ int main(int, char**) {
     std::string str1 = "int age = 40";
     std::string str2 = "intA_0=50";
     std::string str3 = "_int8a>=46";
-    std::string str4 = "in arg b = 23 =b9";
+    std::string str4 = "int arg=3, b = 23 =b9";
     std::string str5 = "2+3   * 5";
     grammar_analyze(str0, res);
     grammar_analyze(str1, res);
