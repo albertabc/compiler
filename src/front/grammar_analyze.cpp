@@ -84,7 +84,6 @@ static void initToken(const char c, Dfstate& state, std::vector<Token>& res) {
     Token token;
     if (c == 'i') {
         state = Dfstate::INT_I;
-        token.type = ID_TYPE;
     } else if (isAlpha(c) || c == '_') {
         state = Dfstate::ID;
         token.type = ID_TYPE;
@@ -122,9 +121,10 @@ static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
                 res.back().val += c;
             } else {
                 state = Dfstate::ID;
-                if (isAlpha(c) || isDigital(c) || c == '_')
+                if (isAlpha(c) || isDigital(c) || c == '_') {
                     res.back().val += c;
-                else {
+                    res.back().type = ID_TYPE;
+                } else {
                     state = Dfstate::INITIAL;
                     initToken(c, state, res);
                 }
@@ -134,11 +134,13 @@ static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
             if (c == 't') {
                 state = Dfstate::INT;
                 res.back().val += c;
+                res.back().type = INT_TYPE;
             } else {
                 state = Dfstate::ID;
-                if (isAlpha(c) || isDigital(c) || c == '_')
+                if (isAlpha(c) || isDigital(c) || c == '_') {
                     res.back().val += c;
-                else {
+                    res.back().type = ID_TYPE;
+                } else {
                     state = Dfstate::INITIAL;
                     initToken(c, state, res);
                 }
@@ -146,12 +148,12 @@ static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
             break;
         case Dfstate::INT:
             if (isBlank(c)) {
-                res.back().type = INT_TYPE;
                 state = Dfstate::INITIAL;
                 initToken(c, state, res);
             } else {
                 state = Dfstate::ID;
                 res.back().val += c;
+                res.back().type = ID_TYPE;
             }
             break;
         case Dfstate::ID:
