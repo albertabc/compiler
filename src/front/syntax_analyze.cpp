@@ -127,6 +127,8 @@ SimpleASTNode::Ptr SimpleSyntaxAnalyzer::intDelare(TokenReader& tokens)
     if (!token.isEmpty() && token.type == INT_TYPE) {
         token = tokens.read(); //consume key word "int"
         node = SimpleASTNode::create(ASTNodeType::INT_DECLARATION, token.val);
+        if (tokens.empty())
+            throw std::invalid_argument("variable name expected!");
         while (!tokens.empty()) {
             if (tokens.peek().type == ID_TYPE) {
                 token = tokens.read(); //consume id

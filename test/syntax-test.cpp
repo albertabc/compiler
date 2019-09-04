@@ -8,27 +8,26 @@
 int main(int, char**) {
     std::vector<Token> res = {};
 
-    std::string str1 = "int age = 40";
+    std::vector<std::string> testCases = {"int age = 40", "int arg, b = 23, a=3,c", "int a = 2 + 3 *5 + 8 + 9 *100", \
+    "int a = 2 + 3 +5", "int", "int "};
 
-    std::string str4 = "int arg, b = 23, a=3,c";
+    for (auto& item : testCases) {
+        grammar_analyze(item, res);
+        for (std::vector<Token>::iterator iter = res.begin(); iter != res.end(); iter++)
+            std::cout << type2str(iter->type) << ": " << iter->val << std::endl;
+        SimpleASTNode::Ptr node;
+        TokenReader reader(res);
+        try {
+            node = SimpleSyntaxAnalyzer::instance()->intDelare(reader);
+        } catch (std::exception& e) {
+            std::cout << e.what() << std::endl;
+            std::terminate();
+        }
 
-    std::string str2 = "int a = 2 + 3 *5 + 8 + 9 *100";
-    std::string str5 = "int a = 2 + 3 +5";
-
-    grammar_analyze(str5, res);
-    SimpleASTNode::Ptr node;
-    TokenReader reader(res);
-    try {
-        node = SimpleSyntaxAnalyzer::instance()->intDelare(reader);
-    } catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
-        std::terminate();
+        if (node != nullptr)
+            node->print(0);
+        res.erase(res.begin(), res.end());
+        std::cout << (reader.empty() ? "TokenReader is empty\n" : "TokenReader still has items\n") << std::endl;
     }
-
-    for (std::vector<Token>::iterator iter = res.begin(); iter != res.end(); iter++)
-        std::cout << type2str(iter->type) << ": " << iter->val << std::endl;
-
-    node->print(0);
-    std::cout << (reader.empty() ? "TokenReader is empty" : "TokenReader still has items") << std::endl;
     return 0;
 }
