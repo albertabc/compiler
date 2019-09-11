@@ -9,7 +9,7 @@ int main(int, char**) {
     std::vector<Token> res = {};
 
     std::vector<std::string> testCases = {"int age = 40", "int arg, b = 23, a=3,c", "int a = 2 + 3 *5 + 8 + 9 *100", \
-    "int a = 2 + 3 +5", "int", "int "};
+    "int a = 2 + ((3 +5)*9 + (9 - 2))", "int b = 2 + 3 +5", "int ", "int"};
 
     for (auto& item : testCases) {
         grammar_analyze(item, res);
@@ -18,10 +18,10 @@ int main(int, char**) {
         SimpleASTNode::Ptr node;
         TokenReader reader(res);
         try {
-            node = SimpleSyntaxAnalyzer::instance()->intDelare(reader);
+            node = SimpleSyntaxAnalyzer::instance()->analyze(reader);
         } catch (std::exception& e) {
             std::cout << e.what() << std::endl;
-            std::terminate();
+            exit(1);
         }
 
         if (node != nullptr)
