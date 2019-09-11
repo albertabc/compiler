@@ -11,12 +11,17 @@
 class SimpleASTNode;
 enum class ASTNodeType
 {
-    INT_DECLARATION,
+    DECLARATION,
     INT_LITERAL,
     ID,
     ASSIGMENT,
     ADDITIVE_EXP,
     MULTIL_EXP,
+    OR_EXP,
+    AND_EXP,
+    EQUAL_EXP,
+    REL_EXP,
+    PRI_EXP,
 };
 
 class SimpleASTNode
@@ -39,7 +44,7 @@ class SimpleSyntaxAnalyzer : public Singleton<SimpleSyntaxAnalyzer>
 {
 public:
     ~SimpleSyntaxAnalyzer() {};
-    SimpleASTNode::Ptr intDelare(TokenReader& tokens);
+    SimpleASTNode::Ptr analyze(TokenReader& tokens);
 private:
     SimpleSyntaxAnalyzer() {};
     friend Singleton<SimpleSyntaxAnalyzer>;

@@ -6,14 +6,20 @@
 enum TokenType {
     ID_TYPE,
     INT_LITERAL_TYPE,
-    INT_TYPE,
+    KEY_TYPE,
     ASSIGN_TYPE,
-    GT_TYPE,
-    GE_TYPE,
+    GLT_TYPE,
+    GLE_TYPE,
     PLUS_TYPE,
     MINUS_TYPE,
     STAR_TYPE,
     SLASH_TYPE,
+    OR_TYPE,
+    AND_TYPE,
+    EQUAL_TYPE,
+    NEQUAL_TYPE,
+    LBRACKET_TYPE,
+    RBRACKET_TYPE,
     NONE_TYPE,
 };
 

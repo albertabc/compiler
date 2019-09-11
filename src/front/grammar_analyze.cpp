@@ -14,9 +14,10 @@ enum class Dfstate {
     ID,
     INT_LITERAL,
     OPERATOR,
-    EQ,
-    GT,
-    GE,
+    ASSIGN,
+    GLT, // Greater or less than
+    GLE, // >= or <=
+    BRACKET,
 };
 
 static void initToken(const char c, Dfstate& state, std::vector<Token>& res);
@@ -32,12 +33,12 @@ std::string type2str(const TokenType& type) {
             return "IntLiteral";
         case ASSIGN_TYPE:
             return "ASSIGN";
-        case GT_TYPE:
-            return "GT";
-        case GE_TYPE:
-            return "GE";
-        case INT_TYPE:
-            return "Int";
+        case GLT_TYPE:
+            return "GLT";
+        case GLE_TYPE:
+            return "GLE";
+        case KEY_TYPE:
+            return "Key";
         case PLUS_TYPE:
             return "Plus";
         case MINUS_TYPE:
@@ -46,6 +47,10 @@ std::string type2str(const TokenType& type) {
             return "Star";
         case SLASH_TYPE:
             return "Slash";
+        case LBRACKET_TYPE:
+            return "LBracket";
+        case RBRACKET_TYPE:
+            return "RBracket";
         default:
             return "None";
     }
@@ -90,15 +95,18 @@ static void initToken(const char c, Dfstate& state, std::vector<Token>& res) {
     } else if (isDigital(c)) {
         state = Dfstate::INT_LITERAL;
         token.type = INT_LITERAL_TYPE;
-    } else if (c == '>') {
-        state = Dfstate::GT;
-        token.type = GT_TYPE;
+    } else if (c == '>' || c == '<') {
+        state = Dfstate::GLT;
+        token.type = GLT_TYPE;
     } else if (c == '=') {
-        state = Dfstate::EQ;
+        state = Dfstate::ASSIGN;
         token.type = ASSIGN_TYPE;
     } else if (c == '+' || c == '-' || c == '*' || c == '/') {
         state = Dfstate::OPERATOR;
         token.type = tokenMap[c];
+    } else if (c == '(' || c == ')'){
+        state = Dfstate::BRACKET;
+        token.type = (c == '(') ? LBRACKET_TYPE : RBRACKET_TYPE;
     } else {
         return;
     }
@@ -110,8 +118,9 @@ static void initToken(const char c, Dfstate& state, std::vector<Token>& res) {
 static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
     switch (state) {
         case Dfstate::INITIAL:
-        case Dfstate::EQ:
+        case Dfstate::ASSIGN:
         case Dfstate::OPERATOR:
+        case Dfstate::BRACKET:
             state = Dfstate::INITIAL;
             initToken(c, state, res);
             break;
@@ -134,7 +143,7 @@ static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
             if (c == 't') {
                 state = Dfstate::INT;
                 res.back().val += c;
-                res.back().type = INT_TYPE;
+                res.back().type = KEY_TYPE;
             } else {
                 state = Dfstate::ID;
                 if (isAlpha(c) || isDigital(c) || c == '_') {
@@ -164,17 +173,17 @@ static void handleState(const char c, Dfstate& state, std::vector<Token>& res) {
                 initToken(c, state, res);
             }
             break;
-        case Dfstate::GT:
+        case Dfstate::GLT:
             if (c == '=') {
-                state = Dfstate::GE;
-                res.back().type = GE_TYPE;
+                state = Dfstate::GLE;
+                res.back().type = GLE_TYPE;
                 res.back().val += c;
             } else {
                 state = Dfstate::INITIAL;
                 initToken(c, state, res);
             }
             break;
-        case Dfstate::GE:
+        case Dfstate::GLE:
             state = Dfstate::INITIAL;
             initToken(c, state, res);
             break;
