@@ -10,3 +10,4 @@ endfunction()
 
 add_sample(grammar_analyze_test)
 add_sample(syntax-test)
+add_sample(my_script)
