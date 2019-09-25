@@ -34,6 +34,7 @@ public:
     static Ptr create(const ASTNodeType& type, const std::string& text);
     void addChild(Ptr node);
     void print(int level);
+    void eval(int level);
 private:
     ASTNodeType m_type;
     std::string m_text;

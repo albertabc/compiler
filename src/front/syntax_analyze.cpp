@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <unordered_map>
+#include <stack>
 
 #include "front/syntax_analyze.h"
 #include "utils/token_handler.h"
@@ -16,6 +18,13 @@ static SimpleASTNode::Ptr priExpress(TokenReader& tokens);
 static SimpleASTNode::Ptr additive(TokenReader& tokens);
 static SimpleASTNode::Ptr multiplicative(TokenReader& tokens);
 static SimpleASTNode::Ptr intLiteral(TokenReader& tokens);
+
+/*
+ * The following struct aims to save the variables
+*/
+
+std::unordered_map<std::string/*variable name*/, std::string/*variable value*/> m_varMap;
+std::stack<SimpleASTNode::Ptr> m_evalStack;
 
 static std::string syntaxType(ASTNodeType& type)
 {
@@ -50,7 +59,10 @@ static SimpleASTNode::Ptr express(TokenReader& tokens)
             SimpleASTNode::Ptr child2 = express(tokens);
             node = SimpleASTNode::create(ASTNodeType::ASSIGMENT, token.val);
             node->addChild(child1);
-            node->addChild(child2);
+            if (child2 != nullptr)
+                node->addChild(child2);
+            else
+                throw std::invalid_argument("An valid expression is required!");
         }
     }
     return node;
@@ -69,7 +81,12 @@ static SimpleASTNode::Ptr orExpress(TokenReader& tokens)
             SimpleASTNode::Ptr child2 = andExpress(tokens);
             node = SimpleASTNode::create(ASTNodeType::OR_EXP, token.val);
             node->addChild(child1);
-            node->addChild(child2);
+            if (child2 != nullptr)
+                node->addChild(child2);
+            else
+            {
+                throw std::invalid_argument("\"||\" Light argument is required!");
+            }
             child1 = node; //key step.
         } else {
             break;
@@ -91,7 +108,12 @@ static SimpleASTNode::Ptr andExpress(TokenReader& tokens)
             SimpleASTNode::Ptr child2 = equalExpress(tokens);
             node = SimpleASTNode::create(ASTNodeType::AND_EXP, token.val);
             node->addChild(child1);
-            node->addChild(child2);
+            if (child2 != nullptr)
+                node->addChild(child2);
+            else
+            {
+                throw std::invalid_argument("\"&&\" Light argument is required!");
+            }
             child1 = node; //key step.
         } else {
             break;
@@ -113,7 +135,12 @@ static SimpleASTNode::Ptr equalExpress(TokenReader& tokens)
             SimpleASTNode::Ptr child2 = relExpress(tokens);
             node = SimpleASTNode::create(ASTNodeType::EQUAL_EXP, token.val);
             node->addChild(child1);
-            node->addChild(child2);
+            if (child2 != nullptr)
+                node->addChild(child2);
+            else
+            {
+                throw std::invalid_argument("\"==\" Light argument is required!");
+            }
             child1 = node; //key step.
         } else {
             break;
@@ -136,7 +163,13 @@ static SimpleASTNode::Ptr relExpress(TokenReader& tokens)
             SimpleASTNode::Ptr child2 = addExpress(tokens);
             node = SimpleASTNode::create(ASTNodeType::REL_EXP, token.val);
             node->addChild(child1);
-            node->addChild(child2);
+            if (child2 != nullptr)
+                node->addChild(child2);
+            else
+            {
+                std::string str = "\"" + token.val + "\" Light argument is required!";
+                throw std::invalid_argument(str.c_str());
+            }
             child1 = node; //key step.
         } else {
             break;
@@ -158,7 +191,13 @@ static SimpleASTNode::Ptr addExpress(TokenReader& tokens)
             SimpleASTNode::Ptr child2 = mulExpress(tokens);
             node = SimpleASTNode::create(ASTNodeType::ADDITIVE_EXP, token.val);
             node->addChild(child1);
-            node->addChild(child2);
+            if (child2 != nullptr)
+                node->addChild(child2);
+            else
+            {
+                std::string str = "\"" + token.val + "\" Light argument is required!";
+                throw std::invalid_argument(str.c_str());
+            }
             child1 = node; //key step.
         } else {
             break;
@@ -180,7 +219,13 @@ static SimpleASTNode::Ptr mulExpress(TokenReader& tokens)
             SimpleASTNode::Ptr child2 = priExpress(tokens);
             node = SimpleASTNode::create(ASTNodeType::MULTIL_EXP, token.val);
             node->addChild(child1);
-            node->addChild(child2);
+            if (child2 != nullptr)
+                node->addChild(child2);
+            else
+            {
+                std::string str = "\"" + token.val + "\" Light argument is required!";
+                throw std::invalid_argument(str.c_str());
+            }
             child1 = node; //key step.
         } else {
             break;
@@ -207,7 +252,11 @@ static SimpleASTNode::Ptr priExpress(TokenReader& tokens)
             token = tokens.read(); // consume the ")"
             if (token.isEmpty() || token.type != TokenType::RBRACKET_TYPE)
                 throw std::invalid_argument("Lack of right bracket \")\"");
+        } else {
+            throw std::invalid_argument("Invalid arguments, valid variable or literal is required!");
         }
+    } else {
+        throw std::invalid_argument("Invalid arguments, valid variable or literal is required!");
     }
     return node;
 }
@@ -292,8 +341,11 @@ SimpleASTNode::Ptr SimpleSyntaxAnalyzer::analyze(TokenReader& tokens)
         if (token.type == TokenType::KEY_TYPE) {
             token = tokens.read();
             node = SimpleASTNode::create(ASTNodeType::DECLARATION, token.val);
-            while (!tokens.empty())
-                node->addChild(express(tokens));
+            while (!tokens.end()) {
+                SimpleASTNode::Ptr child;
+                child = express(tokens);
+                node->addChild(child);
+            }
         } else {
             node = express(tokens);
         }
@@ -324,6 +376,110 @@ void SimpleASTNode::print(int level)
     }
 }
 
+void SimpleASTNode::eval(int level)
+{
+    //Recursive ending condition
+    if (level && m_childList.empty())
+        return;
+    else if (!level && m_childList.empty()) {
+        //std::cout << "here";
+        if (m_type == ASTNodeType::ID) {
+            auto search = m_varMap.find(m_text);
+            if (search != m_varMap.end()) {
+                std::cout << m_text << ": " << search->second;
+            } else {
+                std::cout << "Undefined var \'" << m_text << "\'";
+            }            
+        } else if (m_type == ASTNodeType::INT_LITERAL) {
+            std::cout << m_text;
+        }
+        return;
+    }
+    for (auto& item : m_childList) {
+        item->eval(level + 1);
+        if (item->m_type == ASTNodeType::ID || item->m_type == ASTNodeType::INT_LITERAL) {
+            m_evalStack.push(item);
+        }
+    }
+    switch (m_type) {
+        case ASTNodeType::DECLARATION:
+            break;
+        case ASTNodeType::MULTIL_EXP:
+        case ASTNodeType::ADDITIVE_EXP:
+        {
+            SimpleASTNode::Ptr child2 = m_evalStack.top();
+            m_evalStack.pop();
+            SimpleASTNode::Ptr child1 = m_evalStack.top();
+            m_evalStack.pop();
+            int iChild1;
+            int iChild2;
+            if (child1->m_type == ASTNodeType::ID) {
+                auto search = m_varMap.find(child1->m_text);
+                if (search != m_varMap.end()) {
+                    iChild1 = atoi((search->second).c_str());
+                } else {
+                    std::cout << "Undefined var \'" << child1->m_text << "\'";
+                    break;
+                }
+            } else if (child1->m_type == ASTNodeType::INT_LITERAL) {
+                iChild1 = atoi((child1->m_text).c_str());
+            }
+            if (child2->m_type == ASTNodeType::ID) {
+                auto search = m_varMap.find(child2->m_text);
+                if (search != m_varMap.end()) {
+                    iChild2 = atoi((search->second).c_str());
+                } else {
+                    std::cout << "Undefined var \'" << child2->m_text << "\'";
+                    break;
+                }
+            } else if (child2->m_type == ASTNodeType::INT_LITERAL) {
+                iChild2 = atoi((child2->m_text).c_str());
+            }
+            int iResult = 0;
+            SimpleASTNode::Ptr result;
+            if (!m_text.compare({"*"})) {
+                iResult = iChild1 * iChild2;
+            } else if (!m_text.compare({"/"})) {
+                iResult = iChild1 / iChild2;
+            } else if (!m_text.compare({"+"})) {
+                iResult = iChild1 + iChild2;
+            } else if (!m_text.compare({"-"})) {
+                iResult = iChild1 - iChild2;
+            }
+            result = SimpleASTNode::create(ASTNodeType::INT_LITERAL, std::to_string(iResult));
+            m_evalStack.push(result);            
+        }
+            break;      
+        case ASTNodeType::ASSIGMENT:
+        {
+            SimpleASTNode::Ptr child2 = m_evalStack.top();
+            m_evalStack.pop();
+            SimpleASTNode::Ptr child1 = m_evalStack.top();
+            m_evalStack.pop();
+            if (child1->m_type == ASTNodeType::ID) {
+                m_varMap.insert({child1->m_text, child2->m_text});
+            }
+        }   
+            break;
+        default:
+            break;     
+    }
+
+    //Handle the final results
+    if (!level) {
+        std::stack<SimpleASTNode::Ptr> tmp;
+        while (!m_evalStack.empty()) {
+            SimpleASTNode::Ptr node = m_evalStack.top();
+            m_evalStack.pop();
+            tmp.push(node);
+        }
+        while (!tmp.empty()) {
+            SimpleASTNode::Ptr node = tmp.top();
+            tmp.pop();
+            std::cout << node->m_text;
+        }
+    }
+}
 /*SimpleASTNode::Ptr SimpleSyntaxAnalyzer::intDelare(TokenReader& tokens)
 {
     SimpleASTNode::Ptr node = nullptr;
