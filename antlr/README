@@ -1,0 +1,50 @@
+All the grammar and syntax rule file *.g4 are copied from :
+
+https://github.com/RichardGong/PlayWithCompiler/tree/master/lab/antlrtest/out/production/antlrtest/antlrtest
+
+1. Set up Antlr on Linux Ubuntu
+
+This is very easy, just following the guideline on the official website.
+https://github.com/antlr/antlr4/blob/master/doc/getting-started.md
+
+The following is copied from the "Unix" part.
+
+
+(1). Install Java (version 1.6 or higher)
+(2). Download
+
+$ cd /usr/local/lib
+$ curl -O https://www.antlr.org/download/antlr-4.7.1-complete.jar
+
+Or just download in browser from website: https://www.antlr.org/download.html and put it somewhere rational like /usr/local/lib.
+
+    Add antlr-4.7.1-complete.jar to your CLASSPATH:
+
+$ export CLASSPATH=".:/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH"
+
+It's also a good idea to put this in your .bash_profile or whatever your startup script is.
+
+    Create aliases for the ANTLR Tool, and TestRig.
+
+$ alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
+$ alias grun='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.gui.TestRig'
+
+Add the environment variables and the alias in the ~/.bashrc is more effective.
+
+2. And Hello.g4 is a simple grammar rule, and Hello.play is just a simple test case.
+
+antlr4 Hello.g4
+javac *.java
+grun Hello tokens -tokens Hello.play
+
+3. antlrtest/PlayScript.g4 is a syntax rule
+
+antlr4 PlayScript.g4
+javac *.java
+cd ..
+grun antlrtest.PlayScript expression -gui
+
+Note: This is an input console. Then enter "age + 10 * 2 + 10", and press Ctrl + D.
+An AST will be shown on the screen.
+
+This is really COOL!!!
